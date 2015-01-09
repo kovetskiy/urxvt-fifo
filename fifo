@@ -1,0 +1,46 @@
+#! perl -w
+use strict;
+use Thread;
+
+sub on_start {
+    my ($self) = @_;
+
+    if ($self->x_resource('fifo.file')) {
+        $self->{file} = $self->x_resource('fifo.file');
+    } else {
+        $self->{file} = '/tmp/urxvt.fifo';
+    }
+
+    ()
+}
+
+sub fifo_start {
+    my ($self) = @_;
+
+    my $fifo_thread = new Thread \&fifo_process, $self;
+
+    ()
+}
+
+sub fifo_process {
+    my ($self) = @_;
+
+    my $fifo_file = $self->{file};
+    my $fifo_fh;
+
+    system("rm -rf $fifo_file");
+    system("mkfifo -m 0666 $fifo_file");
+
+    open($fifo_fh, "+< $fifo_file");
+    while (<$fifo_fh>)
+    {
+        $self->tt_write($_);
+    }
+}
+
+sub on_user_command {
+   my ($self, $cmd) = @_;
+   if ($cmd eq "fifo:start") {
+      $self->fifo_start($self);
+   }
+}
