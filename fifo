@@ -18,6 +18,7 @@ sub fifo_start {
     my ($self) = @_;
 
     my $fifo_thread = new Thread \&fifo_process, $self;
+    write_pid($self);
 
     ()
 }
@@ -36,6 +37,17 @@ sub fifo_process {
     {
         $self->tt_write($_);
     }
+}
+
+sub write_pid {
+    my ($self) = @_;
+
+    my $pid_file = $self->{file} . ".pid";
+    my $pid_fh;
+
+    open($pid_fh, "> $pid_file");
+    print $pid_fh $$;
+    close $pid_fh;
 }
 
 sub on_user_command {
