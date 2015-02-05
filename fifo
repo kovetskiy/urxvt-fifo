@@ -50,6 +50,13 @@ sub write_pid {
     close $pid_fh;
 }
 
+sub on_action {
+    my ($self, $action) = @_;
+
+    print $action;
+    on_user_command($self, "fifo:" . $action);
+}
+
 sub on_user_command {
    my ($self, $cmd) = @_;
    if ($cmd eq "fifo:start") {
